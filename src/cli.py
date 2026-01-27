@@ -14,4 +14,4 @@ token = os.getenv("GITHUB_TOKEN", "")
 html_path = main(repo, token)
 
 print(f"\n📊 Opening {html_path}")
-webbrowser.open(html_path)
+webbrowser.open(str(html_path))
