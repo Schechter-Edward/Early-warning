@@ -39,7 +39,7 @@ def file_churns(owner, repo, tok, commits):
     return churn, counts, authors
 
 # ---------- scoring ----------
-def score_file(fn, churn, cnt, authors, avg_churn, top20):
+def score_file(fn, churn, cnt, authors, avg_churn, top20, commits_24h):
     s, reasons = 0, []
     # structural
     if churn[fn] > avg_churn:
@@ -49,7 +49,7 @@ def score_file(fn, churn, cnt, authors, avg_churn, top20):
     # temporal
     if cnt[fn] > 5:
         s += 1; reasons.append("Active (>5 commits)")
-    if any(_24h_spike(fn, commits_since(*fn.split("/")[0:2], tok="", days=1))):
+    if _24h_spike(fn, commits_24h):
         s += 1; reasons.append("24 h spike")
     # centrality
     if any(c in fn for c in CORE):
@@ -89,9 +89,13 @@ def main(repo, token):
     top20 = set(sorted(churn, key=churn.get, reverse=True)[:max(1, len(churn)//5)])
     con = init_db()
 
+    # Pre-filter commits for 24h spike check
+    cutoff_24h = (dt.datetime.utcnow() - dt.timedelta(days=1)).isoformat()
+    commits_24h = [c for c in commits if c["commit"]["author"]["date"] > cutoff_24h]
+
     rows, alerts = [], []
     for fn in churn:
-        sc = score_file(fn, churn, cnt, authors, avg, top20)
+        sc = score_file(fn, churn, cnt, authors, avg, top20, commits_24h)
         con.execute("insert or replace into hist(file,score,band,ts) values(?,?,?,?)",
                     (fn, sc["score"], sc["band"], dt.datetime.utcnow()))
         rows.append(sc)
