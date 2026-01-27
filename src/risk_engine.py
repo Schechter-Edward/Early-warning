@@ -17,7 +17,10 @@ def _api(url, tok, params=None):
     h = {"Accept": "application/vnd.github.v3+json"}
     if tok: h["Authorization"] = f"token {tok}"
     r = requests.get(url, headers=h, params=params)
-    return r.json() if r.status_code == 200 else []
+    if r.status_code != 200:
+        print(f"⚠️ API Error {url}: {r.status_code} {r.text[:100]}")
+        return []
+    return r.json()
 
 # ---------- data ----------
 def commits_since(owner, repo, tok, days=30):
@@ -30,6 +33,7 @@ def file_churns(owner, repo, tok, commits):
     for c in commits:
         sha, date = c["sha"], c["commit"]["author"]["date"]
         details = _api(f"https://api.github.com/repos/{owner}/{repo}/commits/{sha}", tok)
+        if not isinstance(details, dict): continue
         for f in details.get("files", []):
             fn = f["filename"]
             if any(x in fn for x in EXCLUDE): continue
