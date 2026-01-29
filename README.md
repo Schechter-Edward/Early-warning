@@ -2,6 +2,7 @@
 > Early-warning system that spots unstable code **before** it breaks prod.
 
 ![demo](public/demo-report.png)
+_Demo risk report (live run)._
 
 ## 30-Second Pitch
 1. Drop the repo URL  
@@ -27,6 +28,7 @@ Output → risk_report.html opens automatically.
 
 ## Live Alert Example
 ![Slack Alert](public/demo-slack.png)
+_Slack alert example._
 
 ## CI / CD in 1 Click
 Add the included GitHub Action → risk scan on every push.
